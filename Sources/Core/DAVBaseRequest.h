@@ -14,5 +14,6 @@
 @property (strong) NSURL *rootURL;
 @property (strong) DAVCredentials *credentials;
 @property (assign) BOOL allowUntrustedCertificate;
+@property (readonly) BOOL isLongRequest;
 
 @end

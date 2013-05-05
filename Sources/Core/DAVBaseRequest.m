@@ -12,4 +12,8 @@
 @synthesize rootURL = _rootURL, credentials = _credentials;
 @synthesize allowUntrustedCertificate = _allowUntrustedCertificate;
 
+
+- (BOOL) isLongRequest{
+    return false;
+}
 @end

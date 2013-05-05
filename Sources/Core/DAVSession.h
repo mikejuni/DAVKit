@@ -15,14 +15,19 @@
 	NSURL *_rootURL;
 	DAVCredentials *_credentials;
 	NSOperationQueue *_queue;
+    NSOperationQueue *_longOperationQueue;
 }
 
 @property (strong, readonly) NSURL *rootURL;
 @property (strong, readonly) DAVCredentials *credentials;
 @property (assign) BOOL allowUntrustedCertificate;
+@property (strong, nonatomic) NSOperationQueue* queue;
+@property (strong, nonatomic) NSOperationQueue* longOperationQueue;
 
 @property (readonly) NSUInteger requestCount; /* KVO compliant */
+@property (readonly) NSUInteger longRequestCount; /* KVO compliant */
 @property (assign) NSInteger maxConcurrentRequests; /* default is 2 */
+@property (assign) NSInteger maxLongConcurrentRequests;
 
 /*
  The root URL should include a scheme and host, followed by any root paths
@@ -33,7 +38,9 @@
 
 - (void)enqueueRequest:(DAVBaseRequest *)aRequest;
 - (void)cancelRequests;
+- (void)cancelLongRequests;
 
 - (void)resetCredentialsCache;
 
 @end
+

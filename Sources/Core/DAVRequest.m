@@ -19,6 +19,9 @@
 
 
 @implementation DAVRequest
+//    void (^_successCallback)(DAVRequest *request, id result);
+//    void (^_failureCallback)(DAVRequest *request, NSError *error);
+//    void (^_progressCallback)(DAVRequest *request, id result);
 
 NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 
@@ -100,16 +103,21 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	return nil;
 }
 
+
 - (id)resultForData:(NSData *)data {
 	return nil;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    if (_progressCallback){
+        _progressCallback(self,data);
+    }else{
 	if (!_data) {
 		_data = [[NSMutableData alloc] init];
 	}
 	
 	[_data appendData:data];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
@@ -160,7 +168,10 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	if ([_delegate respondsToSelector:@selector(request:didFailWithError:)]) {
 		[_delegate request:self didFailWithError:error];
 	}
-	
+    
+    if (_failureCallback){
+        _failureCallback(self, error);
+    }
 	[self didFinish];
 }
 
@@ -181,6 +192,10 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 		
 		[_delegate request:self didSucceedWithResult:result];
 	}
+    if (_successCallback){
+		id result = [self resultForData:_data];
+        _successCallback(self,result);
+    }
 	
 	[self didFinish];
 }

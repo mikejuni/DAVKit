@@ -16,7 +16,9 @@
 @synthesize rootURL = _rootURL;
 @synthesize credentials = _credentials;
 @synthesize allowUntrustedCertificate = _allowUntrustedCertificate;
-@dynamic requestCount, maxConcurrentRequests;
+@dynamic requestCount, longRequestCount, maxConcurrentRequests, maxLongConcurrentRequests;
+@synthesize queue=_queue;
+@synthesize longOperationQueue=_longOperationQueue;
 
 #define DEFAULT_CONCURRENT_REQS 2
 
@@ -35,6 +37,7 @@
 		_credentials = credentials;
 		_allowUntrustedCertificate = NO;
 		
+        /*
 		_queue = [[NSOperationQueue alloc] init];
 		[_queue setMaxConcurrentOperationCount:DEFAULT_CONCURRENT_REQS];
 		
@@ -42,27 +45,87 @@
 				 forKeyPath:@"operationCount"
 					options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew)
 					context:NULL];
+         */
 	}
 	return self;
 }
 
+- (NSOperationQueue*)queue{
+    if (!_queue){
+        _queue=[[NSOperationQueue alloc]init];
+        [_queue setMaxConcurrentOperationCount:DEFAULT_CONCURRENT_REQS];
+        
+        [_queue addObserver:self forKeyPath:@"operationCount" options:(NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew) context:@"normalQueue"];
+    }
+    return _queue;
+}
+
+- (void)setQueue:(NSOperationQueue *)queue{
+    if (_queue){
+        [_queue removeObserver:self forKeyPath:@"operationCount"];
+        _queue=nil;
+    }
+    
+    _queue=queue;
+    
+    [_queue addObserver:self forKeyPath:@"operationCount" options:(NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew) context:@"normalQueue"];
+}
+
+- (void)setLongOperationQueue:(NSOperationQueue *)longOperationQueue{
+    if (_longOperationQueue){
+        [_longOperationQueue removeObserver:self forKeyPath:@"operationCount"];
+        _longOperationQueue=nil;
+    }
+    
+    _longOperationQueue=longOperationQueue;
+    
+        [_longOperationQueue addObserver:self forKeyPath:@"operationCount" options:(NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew) context:@"longQueue" ];    
+}
+
+- (NSOperationQueue*)longOperationQueue{
+    if (!_longOperationQueue) {
+        _longOperationQueue=[[NSOperationQueue alloc]init];
+        [_longOperationQueue setMaxConcurrentOperationCount:DEFAULT_CONCURRENT_REQS];
+        
+        [_longOperationQueue addObserver:self forKeyPath:@"operationCount" options:(NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew) context:@"longQueue" ];
+    }
+    return _longOperationQueue;
+}
+
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([keyPath isEqualToString:@"operationCount"]) {
-		[self willChangeValueForKey:@"requestCount"];
-		[self didChangeValueForKey:@"requestCount"];
+        if ([((__bridge NSString*)context) isEqualToString:@"normalQueue"]){
+            [self willChangeValueForKey:@"requestCount"];
+            [self didChangeValueForKey:@"requestCount"];
+        }else{
+            [self willChangeValueForKey:@"longRequestCount"];
+            [self didChangeValueForKey:@"longRequestCount"];
+        }
 	}
 }
 
 - (NSUInteger)requestCount {
-	return [_queue operationCount];
+	return [self.queue operationCount];
+}
+
+- (NSUInteger)longRequestCount{
+    return [self.longOperationQueue operationCount];
 }
 
 - (NSInteger)maxConcurrentRequests {
-	return [_queue maxConcurrentOperationCount];
+	return [self.queue maxConcurrentOperationCount];
+}
+
+- (NSInteger)maxLongConcurrentRequests{
+    return [self.longOperationQueue maxConcurrentOperationCount];
 }
 
 - (void)setMaxConcurrentRequests:(NSInteger)aVal {
-	[_queue setMaxConcurrentOperationCount:aVal];
+	[self.queue setMaxConcurrentOperationCount:aVal];
+}
+
+- (void)setMaxLongConcurrentRequests:(NSInteger)maxLongConcurrentRequests{
+    [self.longOperationQueue setMaxConcurrentOperationCount:maxLongConcurrentRequests];
 }
 
 - (void)enqueueRequest:(DAVBaseRequest *)aRequest {
@@ -71,12 +134,20 @@
 	aRequest.credentials = _credentials;
 	aRequest.rootURL = _rootURL;
 	aRequest.allowUntrustedCertificate = _allowUntrustedCertificate;
-	
-	[_queue addOperation:aRequest];
+    
+	if (aRequest.isLongRequest){
+        [self.longOperationQueue addOperation:aRequest];
+    }else{
+        [self.queue addOperation:aRequest];
+    }
 }
 
 - (void)cancelRequests {
-	[_queue cancelAllOperations];
+	[self.queue cancelAllOperations];
+}
+
+- (void)cancelLongRequests {
+    [self.longOperationQueue cancelAllOperations];
 }
 
 - (void)resetCredentialsCache {
@@ -105,7 +176,12 @@
 }
 
 - (void)dealloc {
-	[_queue removeObserver:self forKeyPath:@"operationCount"];
+    if (_queue){
+        [_queue removeObserver:self forKeyPath:@"operationCount"];
+    }
+    if (_longOperationQueue){
+        [_longOperationQueue removeObserver:self forKeyPath:@"operationCount"];
+    }
 }
 
 @end

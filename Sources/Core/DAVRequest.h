@@ -24,6 +24,9 @@ extern NSString *const DAVClientErrorDomain;
 @property (strong, readonly) NSString *path;
 
 @property (weak) id < DAVRequestDelegate > delegate;
+@property (nonatomic, copy) void (^successCallback)(DAVRequest *request, id result);
+@property (nonatomic, copy) void (^failureCallback)(DAVRequest *request, NSError* error);
+@property (nonatomic, copy) void (^progressCallback)(DAVRequest *request, id data);
 
 - (id)initWithPath:(NSString *)aPath;
 
