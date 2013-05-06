@@ -51,14 +51,27 @@
 
 @implementation DAVGetRequest
 
+@synthesize targetFile=_targetFile;
+
 - (NSURLRequest *)request {
+	NSFileManager fileMgr=[NSFileManager defaultManager];
+	[fileMgr createFileAtPath:_targetFile contents:nil attributes:nil];
+	_fileHandle=[NSFileHandle fileHandleForWritingAtPath:targetFile];
+	if (!_fileHandle){
+		return null;
+	}
 	return [self newRequestWithPath:self.path method:@"GET"];
 }
 
 - (id)resultForData:(NSData *)data {
+	[_fileHandle closeFile];
 	return data;
 }
 
+- (BOOL)dataReceived:(NSData *)data{
+	[_fileHandle writeData:data];
+	return YES;
+}
 @end
 
 
@@ -141,16 +154,31 @@
 
 @synthesize data = _pdata;
 @synthesize dataMIMEType = _MIMEType;
+@synthesize sourceFile=_sourceFile;
 
 - (NSURLRequest *)request {
-	NSParameterAssert(_pdata != nil);
+	NSParameterAssert(_pdata != nil && _sourceFile!=null);
 	
-	NSString *len = [NSString stringWithFormat:@"%ld", [_pdata length]];
-	
-	NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
-	[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
-	[req setValue:len forHTTPHeaderField:@"Content-Length"];
-	[req setHTTPBody:_pdata];
+	if (_pdata){
+		NSString *len = [NSString stringWithFormat:@"%ld", [_pdata length]];
+		NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
+		[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
+		[req setValue:len forHTTPHeaderField:@"Content-Length"];
+		[req setHTTPBody:_pdata];
+	}else{
+		NSFileManager *fileMgr=[NSFileManage defaultManager];
+		NSError *error=nil;
+		NSDictionary *attr=[fileMgr attributesOfItemAtPath:_sourceFile error:&error];
+		if (error){
+			return nil;	
+		}
+		NSString *len=[NSString stringWithFormat:@"%ld", attr.fileSize];
+		NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
+		[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
+		[req setValue:len forHTTPHeaderField:@"Content-Length"];
+		NSInputStream *input=[NSInputStream inputStreamWithFileAtPath:_sourceFile];
+		[req setHTTPBodyStream:input];
+	}
 	
 	return req;
 }

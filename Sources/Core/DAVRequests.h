@@ -21,7 +21,11 @@
 @interface DAVDeleteRequest : DAVRequest { }
 @end
 
-@interface DAVGetRequest : DAVRequest { }
+@interface DAVGetRequest : DAVRequest {
+	NSString *_targetFile;
+	NSFileHandle *_fileHandle;
+}
+@property (strong, nonatomic) NSString* targetFile;
 @end
 
 @interface DAVListingRequest : DAVRequest {
@@ -43,10 +47,12 @@
   @private
 	NSData *_pdata;
 	NSString *_MIMEType;
+	NSString *_sourceFile;
 }
 
 // Pass - [NSData dataWithContentsOfFile:] to upload a local file
 @property (strong) NSData *data;
 @property (copy) NSString *dataMIMEType; // defaults to application/octet-stream
+@property (strong) NSString *sourceFile;
 
 @end

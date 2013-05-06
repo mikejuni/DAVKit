@@ -19,9 +19,6 @@
 
 
 @implementation DAVRequest
-//    void (^_successCallback)(DAVRequest *request, id result);
-//    void (^_failureCallback)(DAVRequest *request, NSError *error);
-//    void (^_progressCallback)(DAVRequest *request, id result);
 
 NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 
@@ -86,11 +83,17 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	[self willChangeValueForKey:@"isExecuting"];
 	
 	_executing = YES;
-	_connection = [NSURLConnection connectionWithRequest:[self request]
-												delegate:self];
+	NSURLRequest* req=nil;
+	req=[self request];
+	if (req){
+		
+
+		_connection = [NSURLConnection connectionWithRequest:[self request] delegate:self];
 	
-	if ([_delegate respondsToSelector:@selector(requestDidBegin:)])
-		[_delegate requestDidBegin:self];
+		if ([_delegate respondsToSelector:@selector(requestDidBegin:)])
+			[_delegate requestDidBegin:self];
+		}
+	}
 	
 	[self didChangeValueForKey:@"isExecuting"];
 }
@@ -108,9 +111,15 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	return nil;
 }
 
+- (BOOL)dataReceived:(NSData *)data{
+	return NO;
+}
+
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    if (_progressCallback){
-        _progressCallback(self,data);
+    if ([self dataReceived:data]){
+        if (_progressCallback){
+            _progressCallback(data);
+        }
     }else{
 	if (!_data) {
 		_data = [[NSMutableData alloc] init];
@@ -170,7 +179,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	}
     
     if (_failureCallback){
-        _failureCallback(self, error);
+        _failureCallback(error);
     }
 	[self didFinish];
 }
@@ -194,7 +203,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	}
     if (_successCallback){
 		id result = [self resultForData:_data];
-        _successCallback(self,result);
+        _successCallback(result);
     }
 	
 	[self didFinish];

@@ -24,9 +24,9 @@ extern NSString *const DAVClientErrorDomain;
 @property (strong, readonly) NSString *path;
 
 @property (weak) id < DAVRequestDelegate > delegate;
-@property (nonatomic, copy) void (^successCallback)(DAVRequest *request, id result);
-@property (nonatomic, copy) void (^failureCallback)(DAVRequest *request, NSError* error);
-@property (nonatomic, copy) void (^progressCallback)(DAVRequest *request, id data);
+@property (nonatomic, copy) void (^successCallback)(id result);
+@property (nonatomic, copy) void (^failureCallback)(NSError* error);
+@property (nonatomic, copy) void (^progressCallback)(id data);
 
 - (id)initWithPath:(NSString *)aPath;
 
@@ -37,6 +37,10 @@ extern NSString *const DAVClientErrorDomain;
 
 /* optional override */
 - (id)resultForData:(NSData *)data;
+
+/* override when it is a long operation
+   If returning YES the data received won't be cached, otherwise it will be cached */
+- (BOOL)dataReceived:(NSData *)data;
 
 @end
 
