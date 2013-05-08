@@ -54,11 +54,11 @@
 @synthesize targetFile=_targetFile;
 
 - (NSURLRequest *)request {
-	NSFileManager fileMgr=[NSFileManager defaultManager];
+	NSFileManager *fileMgr=[NSFileManager defaultManager];
 	[fileMgr createFileAtPath:_targetFile contents:nil attributes:nil];
-	_fileHandle=[NSFileHandle fileHandleForWritingAtPath:targetFile];
+	_fileHandle=[NSFileHandle fileHandleForWritingAtPath:_targetFile];
 	if (!_fileHandle){
-		return null;
+		return nil;
 	}
 	return [self newRequestWithPath:self.path method:@"GET"];
 }
@@ -94,7 +94,7 @@
 		[req setValue:@"infinity" forHTTPHeaderField:@"Depth"];
 	}
 	else {
-		[req setValue:[NSString stringWithFormat:@"%ld", _depth] forHTTPHeaderField:@"Depth"];
+		[req setValue:[NSString stringWithFormat:@"%d", _depth] forHTTPHeaderField:@"Depth"];
 	}
 	
 	[req setValue:@"application/xml" forHTTPHeaderField:@"Content-Type"];
@@ -157,23 +157,23 @@
 @synthesize sourceFile=_sourceFile;
 
 - (NSURLRequest *)request {
-	NSParameterAssert(_pdata != nil && _sourceFile!=null);
-	
+	NSParameterAssert(_pdata != nil && _sourceFile!=nil);
+	NSMutableURLRequest *req;
 	if (_pdata){
-		NSString *len = [NSString stringWithFormat:@"%ld", [_pdata length]];
-		NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
+		NSString *len = [NSString stringWithFormat:@"%d", [_pdata length]];
+		req = [self newRequestWithPath:self.path method:@"PUT"];
 		[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
 		[req setValue:len forHTTPHeaderField:@"Content-Length"];
 		[req setHTTPBody:_pdata];
 	}else{
-		NSFileManager *fileMgr=[NSFileManage defaultManager];
+		NSFileManager *fileMgr=[NSFileManager defaultManager];
 		NSError *error=nil;
 		NSDictionary *attr=[fileMgr attributesOfItemAtPath:_sourceFile error:&error];
 		if (error){
 			return nil;	
 		}
-		NSString *len=[NSString stringWithFormat:@"%ld", attr.fileSize];
-		NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
+		NSString *len=[NSString stringWithFormat:@"%lld", attr.fileSize];
+		req = [self newRequestWithPath:self.path method:@"PUT"];
 		[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
 		[req setValue:len forHTTPHeaderField:@"Content-Length"];
 		NSInputStream *input=[NSInputStream inputStreamWithFileAtPath:_sourceFile];
