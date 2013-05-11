@@ -38,7 +38,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 - (NSURL *)concatenatedURLWithPath:(NSString *)aPath {
 	NSParameterAssert(aPath != nil);
 	
-	return [self.rootURL URLByAppendingPathComponent:aPath];
+	return [self.rootURL URLByAppendingPathComponent:[aPath stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] ];
 }
 
 - (BOOL)isConcurrent {
