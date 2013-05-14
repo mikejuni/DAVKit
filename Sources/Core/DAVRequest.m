@@ -92,7 +92,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	if (req){
 		
 
-		_connection = [NSURLConnection connectionWithRequest:[self request] delegate:self];
+		_connection = [NSURLConnection connectionWithRequest:req delegate:self];
 	
 		if ([_delegate respondsToSelector:@selector(requestDidBegin:)]){
             [_delegate requestDidBegin:self];
@@ -101,6 +101,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	}
 	
 	[self didChangeValueForKey:@"isExecuting"];
+	NSLog(@"Start completed");
 }
 
 - (NSURLRequest *)request {
@@ -149,7 +150,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 }
 
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
-#ifdef XCODE
+#ifdef __APPLE__
 	BOOL result = [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodDefault] ||
 	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPBasic] ||
 	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPDigest] ||
@@ -164,7 +165,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-#ifdef XCODE
+#ifdef __APPLE__
 	if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
 		if (self.allowUntrustedCertificate)
 			[challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
@@ -181,7 +182,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 			// Wrong login/password
 			[[challenge sender] cancelAuthenticationChallenge:challenge];
 		}
-#ifdef XCODE
+#ifdef __APPLE__
 	}
 #endif
 }
@@ -232,7 +233,7 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	
 	NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
 	[request setHTTPMethod:method];
-#ifdef XCODE
+#ifdef __APPLE__
 	[request setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
 #else
 	[request setCachePolicy:NSURLRequestReloadIgnoringCacheData];

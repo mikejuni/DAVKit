@@ -9,6 +9,7 @@
 #import <Foundation/NSFileManager.h>
 #import <Foundation/NSFileHandle.h>
 #import <Foundation/NSException.h>
+#import <Foundation/NSData.h>
 #import "DAVRequests.h"
 
 #import "DAVListingParser.h"
@@ -84,6 +85,10 @@
 @synthesize depth = _depth;
 
 - (id)initWithPath:(NSString *)aPath {
+	if (![aPath hasSuffix:@"/"]){
+		aPath=[NSString stringWithFormat:@"%@%@",aPath,@"/"];
+	}
+	NSLog(@"%@",aPath);
 	self = [super initWithPath:aPath];
 	if (self) {
 		_depth = 1;
@@ -93,6 +98,7 @@
 
 - (NSURLRequest *)request {
 	NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PROPFIND"];
+	NSLog(@"%@: %@",req, req.HTTPMethod);
 	
 	if (_depth > 1) {
 		[req setValue:@"infinity" forHTTPHeaderField:@"Depth"];
@@ -164,13 +170,11 @@
 	NSParameterAssert(_pdata != nil && _sourceFile!=nil);
 	NSMutableURLRequest *req;
 	if (_pdata){
-#ifdef XCODE
 		NSString *len = [NSString stringWithFormat:@"%d", [_pdata length]];
 		req = [self newRequestWithPath:self.path method:@"PUT"];
 		[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
 		[req setValue:len forHTTPHeaderField:@"Content-Length"];
 		[req setHTTPBody:_pdata];
-#endif
 	}else{
 		NSFileManager *fileMgr=[NSFileManager defaultManager];
 		NSError *error=nil;
