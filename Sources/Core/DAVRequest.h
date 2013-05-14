@@ -5,6 +5,12 @@
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
 
+#import <Foundation/NSURLConnection.h>
+#import <Foundation/NSURLRequest.h>
+#import <Foundation/NSURLResponse.h>
+#import <Foundation/NSURLProtectionSpace.h>
+#import <Foundation/NSURLCredential.h>
+#import <Foundation/NSURLAuthenticationChallenge.h>
 #import "DAVBaseRequest.h"
 
 @protocol DAVRequestDelegate;

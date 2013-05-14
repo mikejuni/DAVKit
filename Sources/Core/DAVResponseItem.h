@@ -4,6 +4,7 @@
 //
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
+#import <Foundation/NSString.h>
 
 typedef enum {
 	DAVResourceTypeUnspecified,

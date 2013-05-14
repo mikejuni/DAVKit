@@ -5,6 +5,10 @@
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
 
+#import <Foundation/NSThread.h>
+#import <Foundation/NSKeyValueObserving.h>
+#import <Foundation/NSError.h>
+#import <Foundation/NSData.h>
 #import "DAVRequest.h"
 
 #import "DAVCredentials.h"
@@ -145,15 +149,22 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 }
 
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
+#ifdef XCODE
 	BOOL result = [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodDefault] ||
 	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPBasic] ||
 	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPDigest] ||
 	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
+#else
+	BOOL result = [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodDefault] ||
+	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPBasic] ||
+	[protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodHTTPDigest];
+#endif
 	
 	return result;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+#ifdef XCODE
 	if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
 		if (self.allowUntrustedCertificate)
 			[challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]
@@ -161,17 +172,18 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 		
 		[challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
 	} else {
+#endif
 		if ([challenge previousFailureCount] == 0) {
-			NSURLCredential *credential = [NSURLCredential credentialWithUser:self.credentials.username
-																	 password:self.credentials.password
-																  persistence:NSURLCredentialPersistenceNone];
+			NSURLCredential *credential = [NSURLCredential credentialWithUser:self.credentials.username password:self.credentials.password persistence:NSURLCredentialPersistenceNone];
 			
 			[[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
 		} else {
 			// Wrong login/password
 			[[challenge sender] cancelAuthenticationChallenge:challenge];
 		}
+#ifdef XCODE
 	}
+#endif
 }
 
 - (void)didFail:(NSError *)error {
@@ -220,7 +232,11 @@ NSString *const DAVClientErrorDomain = @"com.MattRajca.DAVKit.error";
 	
 	NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
 	[request setHTTPMethod:method];
+#ifdef XCODE
 	[request setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
+#else
+	[request setCachePolicy:NSURLRequestReloadIgnoringCacheData];
+#endif
     [request setTimeoutInterval:DEFAULT_TIMEOUT];
 	
 	return request;

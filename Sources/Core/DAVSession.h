@@ -4,6 +4,12 @@
 //
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
+#import <Foundation/NSException.h>
+#import <Foundation/NSObject.h>
+#import <Foundation/NSOperation.h>
+#import <Foundation/NSURLCredentialStorage.h>
+#import <Foundation/NSDictionary.h>
+#import <Foundation/NSKeyValueObserving.h>
 
 @class DAVCredentials;
 @class DAVBaseRequest;

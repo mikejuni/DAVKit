@@ -5,6 +5,7 @@
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
 
+#import <Foundation/NSFileHandle.h>
 #import "DAVRequest.h"
 
 @interface DAVCopyRequest : DAVRequest {

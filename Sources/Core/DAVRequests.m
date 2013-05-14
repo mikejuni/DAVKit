@@ -5,6 +5,10 @@
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
 
+#import <Foundation/NSStream.h>
+#import <Foundation/NSFileManager.h>
+#import <Foundation/NSFileHandle.h>
+#import <Foundation/NSException.h>
 #import "DAVRequests.h"
 
 #import "DAVListingParser.h"
@@ -160,11 +164,13 @@
 	NSParameterAssert(_pdata != nil && _sourceFile!=nil);
 	NSMutableURLRequest *req;
 	if (_pdata){
+#ifdef XCODE
 		NSString *len = [NSString stringWithFormat:@"%d", [_pdata length]];
 		req = [self newRequestWithPath:self.path method:@"PUT"];
 		[req setValue:[self dataMIMEType] forHTTPHeaderField:@"Content-Type"];
 		[req setValue:len forHTTPHeaderField:@"Content-Length"];
 		[req setHTTPBody:_pdata];
+#endif
 	}else{
 		NSFileManager *fileMgr=[NSFileManager defaultManager];
 		NSError *error=nil;

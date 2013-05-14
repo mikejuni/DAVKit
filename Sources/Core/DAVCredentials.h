@@ -4,6 +4,8 @@
 //
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
+#import <Foundation/NSObject.h>
+#import <Foundation/NSString.h>
 
 @interface DAVCredentials : NSObject {
   @private

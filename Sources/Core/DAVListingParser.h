@@ -4,6 +4,9 @@
 //
 //  Copyright Matt Rajca 2010. All rights reserved.
 //
+#import <Foundation/NSString.h>
+#import <Foundation/NSArray.h>
+#import <Foundation/NSXMLParser.h>
 
 @class DAVResponseItem;
 

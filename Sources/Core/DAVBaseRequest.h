@@ -5,6 +5,9 @@
 //  Copyright Matt Rajca 2011. All rights reserved.
 //
 
+#import <Foundation/NSOperation.h>
+#import <Foundation/NSURL.h>
+
 @class DAVCredentials;
 
 @interface DAVBaseRequest : NSOperation {
